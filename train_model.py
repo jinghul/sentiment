@@ -13,7 +13,7 @@ import requests
 import json
 import pickle
 import numpy as np
-# nltk.download()
+nltk.download()
 from nltk.corpus import stopwords
 #import simplejson as json
 # from sentiment_analyzer import SentimentIntensityAnalyzer
