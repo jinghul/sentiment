@@ -168,7 +168,7 @@ if __name__ == "__main__":
     avg_r_all, avg_r_pos, avg_r_neg, avg_r_net = 0, 0, 0, 0
     for train, test in kf.split(y):
 
-        model = classifier.fit(x[train], y[train])
+        model = classifier.fit(x_feats[train], y[train])
         print('Curr best svm params: %s', classifier.best_params_, end='\n')
         predicts = model.predict(x[test])
 
