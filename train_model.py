@@ -139,10 +139,10 @@ if __name__ == "__main__":
 
     # Set up classifier
     # classifier = SentimentIntensityAnalyzer()
-    # param_grid = {
-        # 'C' : [0.1, 1, 2, 3, 5],
-        # 'gamma' : [0.01, 0.1, 1, 2, 3]
-    # }
+    param_grid = {
+        'C' : [0.1, 1, 2, 3, 5],
+        'gamma' : [0.01, 0.1, 1, 2, 3]
+    }
     # classifier = GridSearchCV(SVC(), param_grid)
     classifier = SVC(C=1, gamma=1)
 
@@ -157,57 +157,62 @@ if __name__ == "__main__":
     # Feature Selection
     x_feats = TfidfVectorizer().fit_transform(x)
 
-    # from sklearn.feature_selection import SelectPercentile, f_classif
-    # f_selector = SelectPercentile(f_classif, percentile=40)
-    # f_selector.fit(x_feats, y)
-    # x_feats = f_selector.transform(x_feats).toarray()
-    print(x_feats.shape)
+    from sklearn.feature_selection import SelectPercentile, f_classif
+    for i in [10, 20, 30, 40, 50, 60]:
+        print("Percent features %d%" % i, end='\n')
+        feat_sel_val(i)
+    
+    def feat_sel_val(percent):
+        f_selector = SelectPercentile(f_classif, percentile=percent)
+        f_selector.fit(x_feats, y)
+        x_feats = f_selector.transform(x_feats).toarray()
+        print(x_feats.shape)
 
-    print("Start training and predict...")
-    kf = KFold(n_splits=10)
-    avg_p_all, avg_p_pos, avg_p_neg, avg_p_net = 0, 0, 0, 0
-    avg_r_all, avg_r_pos, avg_r_neg, avg_r_net = 0, 0, 0, 0
-    cnt = 0
-    for train, test in kf.split(y):
+        print("Start training and predict...")
+        kf = KFold(n_splits=10)
+        avg_p_all, avg_p_pos, avg_p_neg, avg_p_net = 0, 0, 0, 0
+        avg_r_all, avg_r_pos, avg_r_neg, avg_r_net = 0, 0, 0, 0
+        cnt = 0
+        for train, test in kf.split(y):
 
-        model = classifier.fit(x_feats[train], y[train])
-        # print('Curr best svm params: %s', classifier.best_params_, end='\n')
-        predicts = model.predict(x_feats[test])
+            model = classifier.fit(x_feats[train], y[train])
+            # print('Curr best svm params: %d' % classifier.best_params_, end='\n')
+            predicts = model.predict(x_feats[test])
 
-        # predict_scores = []
-        # for ind in test:
-        #     # for instance in x[test]:
-        #       instance = x[ind]
-        #       predict_scores.append(classifier.polarity_scores(instance)["compound"])
-        # predicts = sentiment_analyzer.map_to_label(predict_scores)
-        # print(classification_report(y[test], predicts))
-        
-        # pos = label 2
-        avg_p_pos += precision_score(y[test], predicts, labels=[2], average='macro')
-        avg_r_pos += recall_score(y[test], predicts, labels=[2], average='macro')
+            # predict_scores = []
+            # for ind in test:
+            #     # for instance in x[test]:
+            #       instance = x[ind]
+            #       predict_scores.append(classifier.polarity_scores(instance)["compound"])
+            # predicts = sentiment_analyzer.map_to_label(predict_scores)
+            # print(classification_report(y[test], predicts))
+            
+            # pos = label 2
+            avg_p_pos += precision_score(y[test], predicts, labels=[2], average='macro')
+            avg_r_pos += recall_score(y[test], predicts, labels=[2], average='macro')
 
-        # neutral = label 1
-        avg_p_net += precision_score(y[test], predicts, labels=[1], average='macro')
-        avg_r_net += recall_score(y[test], predicts, labels=[1], average='macro')
+            # neutral = label 1
+            avg_p_net += precision_score(y[test], predicts, labels=[1], average='macro')
+            avg_r_net += recall_score(y[test], predicts, labels=[1], average='macro')
 
-        # negative = label 0
-        avg_p_neg += precision_score(y[test], predicts, labels=[0], average='macro')
-        avg_r_neg += recall_score(y[test], predicts, labels=[0], average='macro')
+            # negative = label 0
+            avg_p_neg += precision_score(y[test], predicts, labels=[0], average='macro')
+            avg_r_neg += recall_score(y[test], predicts, labels=[0], average='macro')
 
-        avg_p_all += precision_score(y[test], predicts, average='macro')
-        avg_r_all += recall_score(y[test], predicts, average='macro')
+            avg_p_all += precision_score(y[test], predicts, average='macro')
+            avg_r_all += recall_score(y[test], predicts, average='macro')
 
-        cnt += 1
-        print('Fold %f completed.', cnt, end='\n')
+            cnt += 1
+            print('Fold %d completed.' % cnt, end='\n')
 
-    print('Average Positive Precision is %f' % (avg_p_pos / 10.0))
-    print('Average Positive Recall is %f' % (avg_r_pos / 10.0), end='\n')
-    print('--------------------', end='\n')
-    print('Average Neutral Precision is %f' % (avg_p_net / 10.0))
-    print('Average Neutral Recall is %f' % (avg_r_net / 10.0), end='\n')
-    print('--------------------', end='\n')
-    print('Average Negative Precision is %f' % (avg_p_neg / 10.0))
-    print('Average Negative Recall is %f' % (avg_r_neg / 10.0), end='\n')
-    print('--------------------', end='\n')
-    print('Average Total Precision is %f' % (avg_p_all / 10.0))
-    print('Average Total Recall is %f' % (avg_r_all / 10.0), end='\n')
+        print('Average Positive Precision is %f' % (avg_p_pos / 10.0))
+        print('Average Positive Recall is %f' % (avg_r_pos / 10.0), end='\n')
+        print('--------------------', end='\n')
+        print('Average Neutral Precision is %f' % (avg_p_net / 10.0))
+        print('Average Neutral Recall is %f' % (avg_r_net / 10.0), end='\n')
+        print('--------------------', end='\n')
+        print('Average Negative Precision is %f' % (avg_p_neg / 10.0))
+        print('Average Negative Recall is %f' % (avg_r_neg / 10.0), end='\n')
+        print('--------------------', end='\n')
+        print('Average Total Precision is %f' % (avg_p_all / 10.0))
+        print('Average Total Recall is %f' % (avg_r_all / 10.0), end='\n')
