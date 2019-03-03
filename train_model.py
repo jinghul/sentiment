@@ -143,7 +143,8 @@ if __name__ == "__main__":
         'C' : [0.001, 0.01, 0.1, 1, 10],
         'gamma' : [0.001, 0.01, 0.1, 1]
     }
-    classifier = GridSearchCV(SVC(), param_grid, cv=10)
+    # classifier = GridSearchCV(SVC(), param_grid, cv=10)
+    classifer = SVC(C=1, gamma=1)
 
     print("Loading data...")
     # with open(os.path.join(data_dir, 'tweets_processed.txt'), 'r') as f:
@@ -166,10 +167,11 @@ if __name__ == "__main__":
     kf = KFold(n_splits=10)
     avg_p_all, avg_p_pos, avg_p_neg, avg_p_net = 0, 0, 0, 0
     avg_r_all, avg_r_pos, avg_r_neg, avg_r_net = 0, 0, 0, 0
+    cnt = 0
     for train, test in kf.split(y):
 
         model = classifier.fit(x_feats[train], y[train])
-        print('Curr best svm params: %s', classifier.best_params_, end='\n')
+        # print('Curr best svm params: %s', classifier.best_params_, end='\n')
         predicts = model.predict(x[test])
 
         # predict_scores = []
@@ -194,6 +196,9 @@ if __name__ == "__main__":
 
         avg_p_all += precision_score(y[test], predicts, average='macro')
         avg_r_all += recall_score(y[test], predicts, average='macro')
+
+        cnt += 1
+        print('Fold %d completed.', cnt, end='\n')
 
     print('Average Positive Precision is %f' % (avg_p_pos / 10.0))
     print('Average Positive Recall is %f' % (avg_r_pos / 10.0), end='\n')
