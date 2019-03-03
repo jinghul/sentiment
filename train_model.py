@@ -99,13 +99,12 @@ def data_preprocessing(data_dir, x_filename, y_filename):
 
     words_stat = {}  # record statistics of the df and tf for each word; Form: {word:[tf, df, tweet index]}
     tweets = []
-    cnt = 0
     with open(os.path.join(data_dir, x_filename), encoding='utf-8') as f:
         for i, line in enumerate(f):
             tweet_obj = json.loads(line.strip(), encoding='utf-8')
             content = tweet_obj['text'].replace("\n", " ")
             postprocess_tweet = pre_process(content)
-            words = pre_process(content, porter)
+            words = pre_process(content)
             for word in words:
                 if word not in stops:
                     postprocess_tweet.append(word)
