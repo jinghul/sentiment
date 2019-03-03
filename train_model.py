@@ -158,6 +158,7 @@ if __name__ == "__main__":
     x_feats = TfidfVectorizer().fit_transform(x)
 
     def feat_sel_val(percent):
+        global x_feats
         f_selector = SelectPercentile(f_classif, percentile=percent)
         f_selector.fit(x_feats, y)
         x_feats = f_selector.transform(x_feats).toarray()
