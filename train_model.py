@@ -1,4 +1,4 @@
-# encoding=utf8
+# encoding=utf-8
 # import sys
 # reload(sys)
 # sys.setdefaultencoding('utf8')
@@ -112,8 +112,8 @@ if __name__ == "__main__":
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
-    avg_p = 0
-    avg_r = 0
+    avg_p_all, avg_p_pos, avg_p_neg, avg_p_net = 0, 0, 0, 0
+    avg_r_all, avg_r_pos, avg_r_neg, avg_r_net = 0, 0, 0, 0
     for train, test in kf.split(y):
 
         # you can use the train data to train your classifiers
@@ -132,8 +132,23 @@ if __name__ == "__main__":
         predicts = sentiment_analyzer.map_to_label(predict_scores)
 
         print(classification_report(y[test], predicts))
-        avg_p += precision_score(y[test], predicts, average='macro')
-        avg_r += recall_score(y[test], predicts, average='macro')
+        avg_p_pos += precision_score(y[test], predicts, labels=[2], average='macro')
+        avg_r_pos += recall_score(y[test], predicts, labels=[2], average='macro')
+        avg_p_neg += precision_score(y[test], predicts, labels=[0], average='macro')
+        avg_r_neg += recall_score(y[test], predicts, labels=[0], average='macro')
+        avg_p_net += precision_score(y[test], predicts, labels=[1], average='macro')
+        avg_r_net += recall_score(y[test], predicts, labels=[1], average='macro')
+        avg_p_all += precision_score(y[test], predicts, average='macro')
+        avg_r_all += recall_score(y[test], predicts, average='macro')
 
-    print('Average Precision is %f.' % (avg_p / 10.0))
-    print('Average Recall is %f.' % (avg_r / 10.0))
+    print('Average Positive Precision is %f.' % (avg_p_pos / 10.0))
+    print('Average Positive Recall is %f.' % (avg_r_pos / 10.0), end='\n')
+    print('--------------------', end='\n')
+    print('Average Negative Precision is %f.' % (avg_p_neg / 10.0))
+    print('Average Negative Recall is %f.' % (avg_r_neg / 10.0), end='\n')
+    print('--------------------', end='\n')
+    print('Average Neutral Precision is %f.' % (avg_p_net / 10.0))
+    print('Average Neutral Recall is %f.' % (avg_r_net / 10.0), end='\n')
+    print('--------------------', end='\n')
+    print('Average Total Precision is %f.' % (avg_p_all / 10.0))
+    print('Average Total Recall is %f.' % (avg_r_all / 10.0))
