@@ -157,11 +157,6 @@ if __name__ == "__main__":
     # Feature Selection
     x_feats = TfidfVectorizer().fit_transform(x)
 
-    from sklearn.feature_selection import SelectPercentile, f_classif
-    for i in [10, 20, 30, 40, 50, 60]:
-        print("Percent features %d" % i, end='\n')
-        feat_sel_val(i)
-    
     def feat_sel_val(percent):
         f_selector = SelectPercentile(f_classif, percentile=percent)
         f_selector.fit(x_feats, y)
@@ -216,3 +211,8 @@ if __name__ == "__main__":
         print('--------------------', end='\n')
         print('Average Total Precision is %f' % (avg_p_all / 10.0))
         print('Average Total Recall is %f' % (avg_r_all / 10.0), end='\n')
+
+    from sklearn.feature_selection import SelectPercentile, f_classif
+    for i in [10, 20, 30, 40, 50, 60]:
+        print("Percent features %d" % i, end='\n')
+        feat_sel_val(i)
