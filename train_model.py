@@ -139,11 +139,11 @@ if __name__ == "__main__":
 
     # Set up classifier
     # classifier = SentimentIntensityAnalyzer()
-    param_grid = {
-        'C' : [0.001, 0.01, 0.1, 1, 10],
-        'gamma' : [0.001, 0.01, 0.1, 1]
-    }
-    # classifier = GridSearchCV(SVC(), param_grid, cv=10)
+    # param_grid = {
+        # 'C' : [0.1, 1, 2, 3, 5],
+        # 'gamma' : [0.01, 0.1, 1, 2, 3]
+    # }
+    # classifier = GridSearchCV(SVC(), param_grid)
     classifier = SVC(C=1, gamma=1)
 
     print("Loading data...")
@@ -157,10 +157,10 @@ if __name__ == "__main__":
     # Feature Selection
     x_feats = TfidfVectorizer().fit_transform(x)
 
-    from sklearn.feature_selection import SelectPercentile, f_classif
-    f_selector = SelectPercentile(f_classif, percentile=40)
-    f_selector.fit(x_feats, y)
-    x_feats = f_selector.transform(x_feats).toarray()
+    # from sklearn.feature_selection import SelectPercentile, f_classif
+    # f_selector = SelectPercentile(f_classif, percentile=40)
+    # f_selector.fit(x_feats, y)
+    # x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
     print("Start training and predict...")
@@ -198,7 +198,7 @@ if __name__ == "__main__":
         avg_r_all += recall_score(y[test], predicts, average='macro')
 
         cnt += 1
-        print('Fold %d completed.', cnt, end='\n')
+        print('Fold %f completed.', cnt, end='\n')
 
     print('Average Positive Precision is %f' % (avg_p_pos / 10.0))
     print('Average Positive Recall is %f' % (avg_r_pos / 10.0), end='\n')
