@@ -144,7 +144,7 @@ if __name__ == "__main__":
         'gamma' : [0.001, 0.01, 0.1, 1]
     }
     # classifier = GridSearchCV(SVC(), param_grid, cv=10)
-    classifer = SVC(C=1, gamma=1)
+    classifier = SVC(C=1, gamma=1)
 
     print("Loading data...")
     # with open(os.path.join(data_dir, 'tweets_processed.txt'), 'r') as f:
@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
         model = classifier.fit(x_feats[train], y[train])
         # print('Curr best svm params: %s', classifier.best_params_, end='\n')
-        predicts = model.predict(x[test])
+        predicts = model.predict(x_feats[test])
 
         # predict_scores = []
         # for ind in test:
