@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     from sklearn.feature_selection import SelectPercentile, f_classif
     for i in [10, 20, 30, 40, 50, 60]:
-        print("Percent features %d%" % i, end='\n')
+        print("Percent features %d" % i, end='\n')
         feat_sel_val(i)
     
     def feat_sel_val(percent):
