@@ -161,7 +161,7 @@ if __name__ == "__main__":
         global x_feats_orig, classifier
         f_selector = SelectPercentile(f_classif, percentile=percent)
         f_selector.fit(x_feats_orig, y)
-        x_feats = f_selector.transform(x_feats).toarray()
+        x_feats = f_selector.transform(x_feats_orig).toarray()
         print(x_feats.shape)
 
         print("Start training and predict...")
