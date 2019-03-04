@@ -22,7 +22,7 @@ from nltk.corpus import stopwords
 
 # Additional sklearn imports for SVM/Bayes + Feature Selection
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.preprocessing import FunctionTransformer
+from sklearn.preprocessing import FunctionTransformer, MinMaxScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import VotingClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -120,8 +120,9 @@ def data_preprocessing(data_dir, x_filename, y_filename):
                             words_stat[word][2] = i
                     else:
                         words_stat[word] = [1,1,i]
-            tweets.append(' '.join(postprocess_tweet))
-            # tweets.append(postprocess_tweet)
+
+            # text, followers, friends, retweets, favorites
+            tweets.append((' '.join(postprocess_tweet), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
 
     print("Preprocessing is completed")
     return tweets
@@ -140,17 +141,25 @@ if __name__ == "__main__":
         y = np.array([int(line.strip()) for line in f.readlines()])
 
     # Feature Selection
+    def get_tfidf_feats(x):
+        return TfidfVectorizer().fit_transform(x[:, 0])
+
     senti_classifier = SentimentIntensityAnalyzer()
     def get_senti_features(x):
-        scores = [list(senti_classifier.polarity_scores(instance).values()) for instance in x]
+        scores = [list(senti_classifier.polarity_scores(instance[0]).values()) for instance in x]
         for score in scores:
             score[-1] += 1  # normalize to 0, 2 scale
         return np.array(scores)
 
+    def get_rts_counts(x):
+        scaler = MinMaxScaler()
+        return scaler.fit_transform(x[:, 1].reshape(-1, 1))
+    
     # Put features together
     feats_union = FeatureUnion([ 
-        ('tfidf', TfidfVectorizer()),
-        ('senti', FunctionTransformer(get_senti_features, validate=False))
+        ('tfidf', FunctionTransformer(get_tfidf_feats, validate=False)),
+        ('senti', FunctionTransformer(get_senti_features, validate=False)),
+        ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
     x_feats = feats_union.fit_transform(x)
     f_selector = SelectPercentile(f_classif, percentile=60)
@@ -158,8 +167,9 @@ if __name__ == "__main__":
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
-    classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    # classifier = SVC(C=1.0, gamma=1.0)
+    # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
+    classifier = SVC(C=1.0, gamma=1.0)
+    # classifier = MultinomialNB(alpha=0.25)
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
@@ -169,15 +179,7 @@ if __name__ == "__main__":
     for train, test in kf.split(y):
 
         model = classifier.fit(x_feats[train], y[train])
-        # print('Curr best svm params: %d' % classifier.best_params_, end='\n')
         predicts = model.predict(x_feats[test])
-
-        # predict_scores = []
-        # for ind in test:
-        #     # for instance in x[test]:
-        #       instance = x[ind]
-        #       predict_scores.append(classifier.polarity_scores(instance)["compound"])
-        # predicts = sentiment_analyzer.map_to_label(predict_scores)
         # print(classification_report(y[test], predicts))
         
         # pos = label 2
