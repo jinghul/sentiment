@@ -158,8 +158,8 @@ if __name__ == "__main__":
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
-    # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=1.0, gamma=1.0)
+    classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
+    # classifier = SVC(C=1.0, gamma=1.0)
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
