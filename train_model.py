@@ -82,6 +82,7 @@ def preprocess(str):
     # additional text preprocessing
     try:
         str = nltk.tokenize.word_tokenize(str)
+        unstemmed_str = str
         pos_str = nltk.pos_tag(str) # also get the pos of the words
         try:
             str = [porter.stem(t) for t in str]
@@ -92,7 +93,7 @@ def preprocess(str):
         print(str)
         pass
         
-    return str, pos_str
+    return str, pos_str, unstemmed_str
 
 
 def data_preprocessing(data_dir, x_filename, y_filename):
@@ -116,7 +117,7 @@ def data_preprocessing(data_dir, x_filename, y_filename):
 
             postprocess_tweet = []
             postprocess_tweet_pos = []
-            words, pos_words = preprocess(content)
+            words, pos_words, unstemmed_words = preprocess(content)
 
             for word in words:
                 if word not in stops:
