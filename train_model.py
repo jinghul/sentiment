@@ -145,22 +145,21 @@ if __name__ == "__main__":
         scores = [list(senti_classifier.polarity_scores(instance).values()) for instance in x]
         for score in scores:
             score[-1] += 1  # normalize to 0, 2 scale
-        return np.array(scores).reshape(-1, 3)
+        return np.array(scores)
 
     # Put features together
-    # feats_union = FeatureUnion([ 
-    #     ('tfidf', TfidfVectorizer()),
-    #     ('senti', FunctionTransformer(get_senti_features, validate=False))
-    # ])
-    # x_feats = feats_union.fit_transform(x)
-    x_feats = TfidfVectorizer().fit_transform(x)
-
+    feats_union = FeatureUnion([ 
+        ('tfidf', TfidfVectorizer()),
+        ('senti', FunctionTransformer(get_senti_features, validate=False))
+    ])
+    x_feats = feats_union.fit_transform(x)
     f_selector = SelectPercentile(f_classif, percentile=60)
     f_selector.fit(x_feats, y)
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
-    classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
+    # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
+    classifier = SVC(c=1.0, gamma=1.0)
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
