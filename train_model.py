@@ -87,7 +87,7 @@ def preprocess(str):
         unstemmed_str = nltk.tokenize.word_tokenize(str)
         str = rm_punctuation(str)
         str = nltk.tokenize.word_tokenize(str)
-        pos_str = nltk.pos_tag(str) # also get the pos of the words
+        # pos_str = nltk.pos_tag(str) # also get the pos of the words
         # try:
         #     str = [porter.stem(t) for t in str]
         # except:
@@ -97,7 +97,7 @@ def preprocess(str):
         print(str)
         pass
         
-    return unstemmed_str, pos_str
+    return unstemmed_str, str
 
 
 def data_preprocessing(data_dir, x_filename, y_filename):
@@ -120,19 +120,11 @@ def data_preprocessing(data_dir, x_filename, y_filename):
             content = tweet_obj['text'].replace("\n", " ")
 
             postprocess_tweet = []
-            postprocess_tweet_pos = []
-            words, pos_words = preprocess(content)
+            words, no_punc_words = preprocess(content)
 
-            for word in words:
+            for word in no_punc_words:
                 if word not in stops:
                     postprocess_tweet.append(word)
-            
-            # PART OF SPEECH feature
-            for j in range(len(pos_words)):
-                word, pos = pos_words[j]
-                if word not in stops:
-                    word = word + '_' + pos
-                    postprocess_tweet_pos.append(word)
                     if word in words_stat.keys():
                         words_stat[word][0] += 1
                         if i != words_stat[word][2]:
@@ -140,9 +132,23 @@ def data_preprocessing(data_dir, x_filename, y_filename):
                             words_stat[word][2] = i
                     else:
                         words_stat[word] = [1,1,i]
+            
+            # PART OF SPEECH feature
+            # for j in range(len(pos_words)):
+            #     word, pos = pos_words[j]
+            #     if word not in stops:
+            #         word = word + '_' + pos
+            #         postprocess_tweet_pos.append(word)
+            #         if word in words_stat.keys():
+            #             words_stat[word][0] += 1
+            #             if i != words_stat[word][2]:
+            #                 words_stat[word][1] += 1
+            #                 words_stat[word][2] = i
+            #         else:
+            #             words_stat[word] = [1,1,i]
 
             # text, followers, friends, retweets, favorites
-            tweets.append((' '.join(postprocess_tweet), (' '.join(postprocess_tweet_pos)), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
+            tweets.append((' '.join(words), (' '.join(postprocess_tweet)), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
 
     print("Preprocessing is completed")
     return tweets
@@ -179,17 +185,18 @@ if __name__ == "__main__":
     # Put features together
     feats_union = FeatureUnion([ 
         ('tfidf', FunctionTransformer(get_tfidf_feats, validate=False)),
-        # ('senti', FunctionTransformer(get_senti_features, validate=False)),
+        ('senti', FunctionTransformer(get_senti_features, validate=False)),
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
+
     x_feats = feats_union.fit_transform(x)
-    f_selector = SelectPercentile(f_classif, percentile=60)
+    f_selector = SelectPercentile(f_classif, percentile=40)
     f_selector.fit(x_feats, y)
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=1.0, gamma=1)
+    classifier = SVC(C=1.0, gamma=0.1)
     # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
