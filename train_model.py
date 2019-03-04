@@ -183,13 +183,13 @@ if __name__ == "__main__":
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
     x_feats = feats_union.fit_transform(x)
-    f_selector = SelectPercentile(f_classif, percentile=40)
+    f_selector = SelectPercentile(f_classif, percentile=60)
     f_selector.fit(x_feats, y)
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=2.0, gamma=1.0)
+    classifier = SVC(C=1.0, gamma=1)
     # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
