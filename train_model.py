@@ -85,14 +85,14 @@ def preprocess(str):
     # additional text preprocessing
     try:
         unstemmed_str = nltk.tokenize.word_tokenize(str)
-        str = rm_punctuation(str)
+        # str = rm_punctuation(str)
         str = nltk.tokenize.word_tokenize(str)
         # pos_str = nltk.pos_tag(str) # also get the pos of the words
-        # try:
-        #     str = [porter.stem(t) for t in str]
-        # except:
-        #     print(str)
-        #     pass
+        try:
+            str = [porter.stem(t) for t in str]
+        except:
+            print(str)
+            pass
     except:
         print(str)
         pass
@@ -148,7 +148,8 @@ def data_preprocessing(data_dir, x_filename, y_filename):
             #             words_stat[word] = [1,1,i]
 
             # text, followers, friends, retweets, favorites
-            tweets.append((' '.join(words), (' '.join(postprocess_tweet)), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
+            # tweets.append((' '.join(words), (' '.join(postprocess_tweet)), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
+            tweets.append(' '.join(postprocess_tweet))
 
     print("Preprocessing is completed")
     return tweets
@@ -169,11 +170,11 @@ if __name__ == "__main__":
     # Feature Selection
     def get_tfidf_feats(x):
         # return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 1])
-        return TfidfVectorizer().fit_transform(x[:,1])
+        return TfidfVectorizer().fit_transform(x)
 
     senti_classifier = SentimentIntensityAnalyzer()
     def get_senti_features(x):
-        scores = [list(senti_classifier.polarity_scores(instance[0]).values()) for instance in x]
+        scores = [list(senti_classifier.polarity_scores(instance).values()) for instance in x]
         for score in scores:
             score[-1] += 1  # normalize to 0, 2 scale
         return np.array(scores)
