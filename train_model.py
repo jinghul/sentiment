@@ -67,6 +67,9 @@ def rm_hashtag_symbol(str):
 def rm_time(str):
     return re.sub(r'[0-9][0-9]:[0-9][0-9]', '', str)
 
+def rm_punctuation(current_tweet):
+    return re.sub(r'[^\w\s]','',current_tweet)
+
 
 porter = nltk.PorterStemmer()
 
@@ -81,19 +84,20 @@ def preprocess(str):
 
     # additional text preprocessing
     try:
+        unstemmed_str = nltk.tokenize.word_tokenize(str)
+        str = rm_punctuation(str)
         str = nltk.tokenize.word_tokenize(str)
-        unstemmed_str = str
         pos_str = nltk.pos_tag(str) # also get the pos of the words
-        try:
-            str = [porter.stem(t) for t in str]
-        except:
-            print(str)
-            pass
+        # try:
+        #     str = [porter.stem(t) for t in str]
+        # except:
+        #     print(str)
+        #     pass
     except:
         print(str)
         pass
         
-    return str, pos_str, unstemmed_str
+    return unstemmed_str, pos_str
 
 
 def data_preprocessing(data_dir, x_filename, y_filename):
@@ -117,18 +121,11 @@ def data_preprocessing(data_dir, x_filename, y_filename):
 
             postprocess_tweet = []
             postprocess_tweet_pos = []
-            words, pos_words, unstemmed_words = preprocess(content)
+            words, pos_words = preprocess(content)
 
             for word in words:
                 if word not in stops:
                     postprocess_tweet.append(word)
-                    if word in words_stat.keys():
-                            words_stat[word][0] += 1
-                            if i != words_stat[word][2]:
-                                words_stat[word][1] += 1
-                                words_stat[word][2] = i
-                            else:
-                                words_stat[word] = [1,1,i]
             
             # PART OF SPEECH feature
             for j in range(len(pos_words)):
@@ -165,7 +162,7 @@ if __name__ == "__main__":
 
     # Feature Selection
     def get_tfidf_feats(x):
-        # return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 0])
+        # return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 1])
         return TfidfVectorizer().fit_transform(x[:,1])
 
     senti_classifier = SentimentIntensityAnalyzer()
@@ -177,7 +174,7 @@ if __name__ == "__main__":
 
     def get_rts_counts(x):
         scaler = MinMaxScaler()
-        return scaler.fit_transform(x[:, 1].reshape(-1, 1))
+        return scaler.fit_transform(x[:, 3].reshape(-1, 1))
     
     # Put features together
     feats_union = FeatureUnion([ 
@@ -192,7 +189,7 @@ if __name__ == "__main__":
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=2.0, gamma=1.0)
+    classifier = SVC(C=1.0, gamma=1.0)
     # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
