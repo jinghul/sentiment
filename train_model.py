@@ -182,11 +182,15 @@ if __name__ == "__main__":
     def get_rts_counts(x):
         scaler = MinMaxScaler()
         return scaler.fit_transform(x[:, 3].reshape(-1, 1))
+
+    def get_len_tweet(x):
+        return np.array([len(instance.split(' ')) for instance in x]).reshape(-1, 1)
     
     # Put features together
     feats_union = FeatureUnion([ 
         ('tfidf', TfidfVectorizer()),
         ('senti', FunctionTransformer(get_senti_features, validate=False)),
+        ('len', FunctionTransformer(get_len_tweet, validate=False))
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
 
@@ -197,8 +201,8 @@ if __name__ == "__main__":
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=1.0, gamma=1)
-    # classifier = MultinomialNB(alpha=0.3)
+    # classifier = SVC(C=1.0, gamma=1)
+    classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
