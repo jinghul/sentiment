@@ -108,8 +108,14 @@ def data_preprocessing(data_dir, x_filename, y_filename):
     with open(os.path.join(data_dir, x_filename), encoding='utf-8') as f:
         for i, line in enumerate(f):
             tweet_obj = json.loads(line.strip(), encoding='utf-8')
+            
+            
+            # CONTEXTual features = profile + retweets + user mentions
+            # content = tweet_obj['text'].replace("\n", " ") + tweet_obj['user']['screen_name'] + tweet_obj['user']['description'].replace("\n"," ")
             content = tweet_obj['text'].replace("\n", " ")
+
             postprocess_tweet = []
+            postprocess_tweet_pos = []
             words, pos_words = preprocess(content)
 
             for word in words:
@@ -122,22 +128,23 @@ def data_preprocessing(data_dir, x_filename, y_filename):
                                 words_stat[word][2] = i
                             else:
                                 words_stat[word] = [1,1,i]
-
-            # for j in range(len(pos_words)):
-            #     word, pos = pos_words[j]
-            #     if word not in stops:
-            #         word = word + '_' + pos
-            #         postprocess_tweet.append(word)
-            #         if word in words_stat.keys():
-            #             words_stat[word][0] += 1
-            #             if i != words_stat[word][2]:
-            #                 words_stat[word][1] += 1
-            #                 words_stat[word][2] = i
-            #         else:
-            #             words_stat[word] = [1,1,i]
+            
+            # PART OF SPEECH feature
+            for j in range(len(pos_words)):
+                word, pos = pos_words[j]
+                if word not in stops:
+                    word = word + '_' + pos
+                    postprocess_tweet_pos.append(word)
+                    if word in words_stat.keys():
+                        words_stat[word][0] += 1
+                        if i != words_stat[word][2]:
+                            words_stat[word][1] += 1
+                            words_stat[word][2] = i
+                    else:
+                        words_stat[word] = [1,1,i]
 
             # text, followers, friends, retweets, favorites
-            tweets.append((' '.join(postprocess_tweet), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
+            tweets.append((' '.join(postprocess_tweet), (' '.join(postprocess_tweet_pos)), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
 
     print("Preprocessing is completed")
     return tweets
@@ -157,7 +164,8 @@ if __name__ == "__main__":
 
     # Feature Selection
     def get_tfidf_feats(x):
-        return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 0])
+        # return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 0])
+        return TfidfVectorizer().fit_transform(x[:,1])
 
     senti_classifier = SentimentIntensityAnalyzer()
     def get_senti_features(x):
@@ -173,7 +181,7 @@ if __name__ == "__main__":
     # Put features together
     feats_union = FeatureUnion([ 
         ('tfidf', FunctionTransformer(get_tfidf_feats, validate=False)),
-        # ('senti', FunctionTransformer(get_senti_features, validate=False)),
+        ('senti', FunctionTransformer(get_senti_features, validate=False)),
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
     x_feats = feats_union.fit_transform(x)
