@@ -112,22 +112,29 @@ def data_preprocessing(data_dir, x_filename, y_filename):
             postprocess_tweet = []
             words, pos_words = preprocess(content)
 
-            # for word in words:
-            #     if word not in stops:
-            #         postprocess_tweet.append(word)
-
-            for j in range(len(pos_words)):
-                word, pos = pos_words[j]
+            for word in words:
                 if word not in stops:
-                    word = word + '_' + pos
                     postprocess_tweet.append(word)
                     if word in words_stat.keys():
-                        words_stat[word][0] += 1
-                        if i != words_stat[word][2]:
-                            words_stat[word][1] += 1
-                            words_stat[word][2] = i
-                    else:
-                        words_stat[word] = [1,1,i]
+                            words_stat[word][0] += 1
+                            if i != words_stat[word][2]:
+                                words_stat[word][1] += 1
+                                words_stat[word][2] = i
+                            else:
+                                words_stat[word] = [1,1,i]
+
+            # for j in range(len(pos_words)):
+            #     word, pos = pos_words[j]
+            #     if word not in stops:
+            #         word = word + '_' + pos
+            #         postprocess_tweet.append(word)
+            #         if word in words_stat.keys():
+            #             words_stat[word][0] += 1
+            #             if i != words_stat[word][2]:
+            #                 words_stat[word][1] += 1
+            #                 words_stat[word][2] = i
+            #         else:
+            #             words_stat[word] = [1,1,i]
 
             # text, followers, friends, retweets, favorites
             tweets.append((' '.join(postprocess_tweet), tweet_obj['retweet_count'] + tweet_obj['favorite_count']))
@@ -150,7 +157,7 @@ if __name__ == "__main__":
 
     # Feature Selection
     def get_tfidf_feats(x):
-        return TfidfVectorizer().fit_transform(x[:, 0])
+        return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 0])
 
     senti_classifier = SentimentIntensityAnalyzer()
     def get_senti_features(x):
@@ -170,7 +177,7 @@ if __name__ == "__main__":
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
     x_feats = feats_union.fit_transform(x)
-    f_selector = SelectPercentile(f_classif, percentile=60)
+    f_selector = SelectPercentile(f_classif, percentile=40)
     f_selector.fit(x_feats, y)
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
