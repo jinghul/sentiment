@@ -179,7 +179,7 @@ if __name__ == "__main__":
     # Put features together
     feats_union = FeatureUnion([ 
         ('tfidf', FunctionTransformer(get_tfidf_feats, validate=False)),
-        ('senti', FunctionTransformer(get_senti_features, validate=False)),
+        # ('senti', FunctionTransformer(get_senti_features, validate=False)),
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
     x_feats = feats_union.fit_transform(x)
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=1.0, gamma=1.0)
+    classifier = SVC(C=2.0, gamma=1.0)
     # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
