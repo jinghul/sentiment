@@ -201,7 +201,7 @@ if __name__ == "__main__":
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=2.0, gamma=2)
+    classifier = SVC(C=5.0, gamma=2)
     # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
