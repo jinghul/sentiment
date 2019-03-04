@@ -1,7 +1,4 @@
-# encoding=utf8
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf8')
+# encoding=utf-8
 
 import io
 import os
@@ -13,7 +10,6 @@ import requests
 import json
 import pickle
 import numpy as np
-# nltk.download()
 from nltk.corpus import stopwords
 #import simplejson as json
 from sentiment_analyzer import SentimentIntensityAnalyzer
@@ -57,7 +53,6 @@ def rm_time(str):
 
 
 def pre_process(str):
-    # do not change the preprocessing order only if you know what you're doing
     str = str.lower()
     str = rm_url(str)
     str = rm_at_user(str)
@@ -84,14 +79,6 @@ def data_preprocessing(data_dir, x_filename, y_filename):
     print("Preprocessing is completed")
     return tweets
 
-    # Re-process samples, filter low frequency words...
-    #fout = open(os.path.join(data_dir, 'tweets_processed.txt'), 'w')
-    # for tweet in tweets:
-    #    fout.write('%s\n' % tweet)
-    # fout.close()
-
-    #print("Preprocessing is completed")
-
 
 if __name__ == "__main__":
     data_dir = './data'  # Setting your own file path here.
@@ -103,8 +90,6 @@ if __name__ == "__main__":
     classifier = SentimentIntensityAnalyzer()
 
     print("Loading data...")
-    # with open(os.path.join(data_dir, 'tweets_processed.txt'), 'r') as f:
-    #    x = np.array(f.readlines())
 
     x = tweets
     with open(os.path.join(data_dir, 'labels.txt'), 'r') as f:
@@ -116,18 +101,10 @@ if __name__ == "__main__":
     avg_r = 0
     for train, test in kf.split(y):
 
-        # you can use the train data to train your classifiers
-        # new_classifier = new_classifiler_model.fit(x[train], y[train])
-        # then apply to the test data as below
-
         predict_scores = []
-        #print(x[:10])
-        #print(test.shape)
 
         for ind in test:
-            # for instance in x[test]:
             instance = x[ind]
-            #print(instance)
             predict_scores.append(classifier.polarity_scores(instance)["compound"])
         predicts = sentiment_analyzer.map_to_label(predict_scores)
 
