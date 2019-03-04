@@ -191,7 +191,7 @@ if __name__ == "__main__":
     ])
 
     x_feats = feats_union.fit_transform(x)
-    f_selector = SelectPercentile(f_classif, percentile=40)
+    f_selector = SelectPercentile(f_classif, percentile=60)
     f_selector.fit(x_feats, y)
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
