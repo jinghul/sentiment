@@ -13,22 +13,27 @@ import requests
 import json
 import pickle
 import numpy as np
-# nltk.download()
-from nltk.corpus import stopwords
-#import simplejson as json
-# from sentiment_analyzer import SentimentIntensityAnalyzer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.model_selection import KFold, GridSearchCV
 from itertools import product
 from inspect import getsourcefile
 from os.path import abspath, join, dirname
 
-# SVM/Bayes imports
+# nltk.download()
+from nltk.corpus import stopwords
+
+# Additional sklearn imports for SVM/Bayes + Feature Selection
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import VotingClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
+from sklearn.feature_selection import SelectPercentile, f_classif
 
 from sklearn.metrics import classification_report, precision_score, recall_score
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import KFold, GridSearchCV
+
+from sentiment_analyzer import SentimentIntensityAnalyzer
 import sentiment_analyzer
 
 
@@ -74,8 +79,7 @@ def pre_process(str):
     str = rm_hashtag_symbol(str)
     str = rm_time(str)
 
-
-    # additions
+    # additional text preprocessing
     try:
         str = nltk.tokenize.word_tokenize(str)
         try:
@@ -122,14 +126,6 @@ def data_preprocessing(data_dir, x_filename, y_filename):
     print("Preprocessing is completed")
     return tweets
 
-    # Re-process samples, filter low frequency words...
-    #fout = open(os.path.join(data_dir, 'tweets_processed.txt'), 'w')
-    # for tweet in tweets:
-    #    fout.write('%s\n' % tweet)
-    # fout.close()
-
-    #print("Preprocessing is completed")
-
 
 if __name__ == "__main__":
     data_dir = './data'  # Setting your own file path here.
@@ -138,33 +134,33 @@ if __name__ == "__main__":
     y_filename = 'labels.txt'
     tweets = data_preprocessing(data_dir, x_filename, y_filename)
 
-    # Set up classifier
-    # classifier = SentimentIntensityAnalyzer()
-    # param_grid = {
-    #     'C' : [0.1, 1, 2, 3, 5],
-    #     'gamma' : [0.01, 0.1, 1, 2, 3]
-    # }
-    # classifier = GridSearchCV(SVC(), param_grid)
-    # classifier = SVC(C=1, gamma=1)
-
     print("Loading data...")
-    # with open(os.path.join(data_dir, 'tweets_processed.txt'), 'r') as f:
-    #    x = np.array(f.readlines())
-
-    x = tweets
+    x = np.array(tweets)
     with open(os.path.join(data_dir, 'labels.txt'), 'r') as f:
         y = np.array([int(line.strip()) for line in f.readlines()])
 
-    classifier = MultinomialNB(alpha=0.25)
-
     # Feature Selection
+    senti_classifier = SentimentIntensityAnalyzer()
+    def get_senti_features(x):
+        scores = [list(senti_classifier.polarity_scores(instance).values()) for instance in x]
+        for score in scores:
+            score[-1] += 1  # normalize to 0, 2 scale
+        return np.array(scores).reshape(-1, 3)
+
+    # Put features together
+    # feats_union = FeatureUnion([ 
+    #     ('tfidf', TfidfVectorizer()),
+    #     ('senti', FunctionTransformer(get_senti_features, validate=False))
+    # ])
+    # x_feats = feats_union.fit_transform(x)
     x_feats = TfidfVectorizer().fit_transform(x)
 
-    from sklearn.feature_selection import SelectPercentile, f_classif
     f_selector = SelectPercentile(f_classif, percentile=60)
     f_selector.fit(x_feats, y)
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
+
+    classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
