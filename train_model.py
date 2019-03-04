@@ -70,7 +70,7 @@ def rm_time(str):
 
 porter = nltk.PorterStemmer()
 
-def pre_process(str):
+def preprocess(str):
     # do not change the preprocessing order only if you know what you're doing
     str = str.lower()
     str = rm_url(str)
@@ -82,6 +82,7 @@ def pre_process(str):
     # additional text preprocessing
     try:
         str = nltk.tokenize.word_tokenize(str)
+        pos_str = nltk.pos_tag(str) # also get the pos of the words
         try:
             str = [porter.stem(t) for t in str]
         except:
@@ -91,7 +92,7 @@ def pre_process(str):
         print(str)
         pass
         
-    return str
+    return str, pos_str
 
 
 def data_preprocessing(data_dir, x_filename, y_filename):
@@ -109,9 +110,16 @@ def data_preprocessing(data_dir, x_filename, y_filename):
             tweet_obj = json.loads(line.strip(), encoding='utf-8')
             content = tweet_obj['text'].replace("\n", " ")
             postprocess_tweet = []
-            words = pre_process(content)
-            for word in words:
+            words, pos_words = preprocess(content)
+
+            # for word in words:
+            #     if word not in stops:
+            #         postprocess_tweet.append(word)
+
+            for j in range(len(pos_words)):
+                word, pos = pos_words[j]
                 if word not in stops:
+                    word = word + '_' + pos
                     postprocess_tweet.append(word)
                     if word in words_stat.keys():
                         words_stat[word][0] += 1
@@ -158,8 +166,8 @@ if __name__ == "__main__":
     # Put features together
     feats_union = FeatureUnion([ 
         ('tfidf', FunctionTransformer(get_tfidf_feats, validate=False)),
-        ('senti', FunctionTransformer(get_senti_features, validate=False)),
-        ('rts', FunctionTransformer(get_rts_counts, validate=False))
+        # ('senti', FunctionTransformer(get_senti_features, validate=False)),
+        # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
     x_feats = feats_union.fit_transform(x)
     f_selector = SelectPercentile(f_classif, percentile=60)
@@ -167,9 +175,9 @@ if __name__ == "__main__":
     x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
-    classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    # classifier = SVC(C=1.0, gamma=1.0)
-    # classifier = MultinomialNB(alpha=0.25)
+    # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
+    classifier = SVC(C=1.0, gamma=1.0)
+    # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
     kf = KFold(n_splits=10)
