@@ -84,7 +84,7 @@ def preprocess(str):
 
     # additional text preprocessing
     try:
-        unstemmed_str = nltk.tokenize.word_tokenize(str)
+        # unstemmed_str = nltk.tokenize.word_tokenize(str)
         # str = rm_punctuation(str)
         str = nltk.tokenize.word_tokenize(str)
         # pos_str = nltk.pos_tag(str) # also get the pos of the words
@@ -97,7 +97,7 @@ def preprocess(str):
         print(str)
         pass
         
-    return unstemmed_str, str
+    return str
 
 
 def data_preprocessing(data_dir, x_filename, y_filename):
@@ -120,9 +120,9 @@ def data_preprocessing(data_dir, x_filename, y_filename):
             content = tweet_obj['text'].replace("\n", " ")
 
             postprocess_tweet = []
-            words, no_punc_words = preprocess(content)
+            words = preprocess(content)
 
-            for word in no_punc_words:
+            for word in words:
                 if word not in stops:
                     postprocess_tweet.append(word)
                     if word in words_stat.keys():
@@ -168,9 +168,9 @@ if __name__ == "__main__":
         y = np.array([int(line.strip()) for line in f.readlines()])
 
     # Feature Selection
-    def get_tfidf_feats(x):
+    # def get_tfidf_feats(x):
         # return TfidfVectorizer(analyzer='word', ngram_range=(1,2)).fit_transform(x[:, 1])
-        return TfidfVectorizer().fit_transform(x)
+        # return TfidfVectorizer().fit_transform(x)
 
     senti_classifier = SentimentIntensityAnalyzer()
     def get_senti_features(x):
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     
     # Put features together
     feats_union = FeatureUnion([ 
-        ('tfidf', FunctionTransformer(get_tfidf_feats, validate=False)),
+        ('tfidf', TfidfVectorizer()),
         ('senti', FunctionTransformer(get_senti_features, validate=False)),
         # ('rts', FunctionTransformer(get_rts_counts, validate=False))
     ])
