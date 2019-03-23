@@ -259,16 +259,21 @@ class SentimentIntensityAnalyzer(object):
         sentiments = self._but_check(words_and_emoticons, sentiments)
 
         valence_dict = self.score_valence(sentiments, text)
-
         return valence_dict
 
     def sentiment_valence(self, valence, sentitext, item, i, sentiments):
         is_cap_diff = sentitext.is_cap_diff
         words_and_emoticons = sentitext.words_and_emoticons
         item_lowercase = item.lower()
+        pos_count, neg_count, total_count = 0, 0, 0
         if item_lowercase in self.lexicon:
             # get the sentiment valence
             valence = self.lexicon[item_lowercase]
+            if valence > 0:
+                pos_count += 1
+            elif valence < 0:
+                neg_count += 1
+            total_count += 1
 
             # check if sentiment laden word is in ALL CAPS (while others aren't)
             if item.isupper() and is_cap_diff:
