@@ -166,10 +166,12 @@ class SentiText(object):
     Identify sentiment-relevant string-level properties of input text.
     """
 
-    def __init__(self, text):
+    def __init__(self, text, rt_count, fl_count):
         if not isinstance(text, str):
             text = str(text.encode('utf-8'))
         self.text = text
+        self.rt_count = rt_count
+        self.fl_count = fl_count
         self.words_and_emoticons = self._words_and_emoticons()
         # doesn't separate words from\
         # adjacent punctuation (keeps emoticons & contractions)

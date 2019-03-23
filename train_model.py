@@ -1,7 +1,4 @@
 # encoding=utf-8
-# import sys
-# reload(sys)
-# sys.setdefaultencoding('utf8')
 
 import io
 import os
@@ -210,7 +207,6 @@ if __name__ == "__main__":
     avg_r_all, avg_r_pos, avg_r_neg, avg_r_net = 0, 0, 0, 0
     cnt = 0
     for train, test in kf.split(y):
-
         model = classifier.fit(x_feats[train], y[train])
         predicts = model.predict(x_feats[test])
         # print(classification_report(y[test], predicts))
