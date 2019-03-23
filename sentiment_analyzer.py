@@ -166,7 +166,7 @@ class SentiText(object):
     Identify sentiment-relevant string-level properties of input text.
     """
 
-    def __init__(self, text, rt_count, fl_count):
+    def __init__(self, text):
         if not isinstance(text, str):
             text = str(text.encode('utf-8'))
         self.text = text
