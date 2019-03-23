@@ -17,7 +17,7 @@ from itertools import product
 from inspect import getsourcefile
 from os.path import abspath, join, dirname
 
-# nltk.download()
+nltk.download()
 from nltk.corpus import stopwords
 
 # Additional sklearn imports for SVM/Bayes + Feature Selection
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
-    classifier = SVC(C=1.5, gamma=1)
+    classifier = SVC(C=1, gamma=1)
     # classifier = MultinomialNB(alpha=0.3)
 
     print("Start training and predict...")
@@ -244,3 +244,6 @@ if __name__ == "__main__":
     print('--------------------', end='\n')
     print('Average Total Precision is %f' % (avg_p_all / 10.0))
     print('Average Total Recall is %f' % (avg_r_all / 10.0), end='\n')
+
+    from joblib import dump, load
+    dump(classifier, 'text_senti.joblib')
