@@ -33,6 +33,8 @@ from sklearn.model_selection import KFold, GridSearchCV
 from sentiment_analyzer import SentimentIntensityAnalyzer
 import sentiment_analyzer
 
+from joblib import dump
+
 def rm_html_tags(str):
     html_prog = re.compile(r'<[^>]+>', re.S)
     return html_prog.sub('', str)
@@ -190,10 +192,10 @@ if __name__ == "__main__":
     ])
 
     x_feats = feats_union.fit_transform(x)
-    f_selector = SelectPercentile(f_classif, percentile=60)
-    f_selector.fit(x_feats, y)
+    # f_selector = SelectPercentile(f_classif, percentile=60)
+    # f_selector.fit(x_feats, y)
 
-    x_feats = f_selector.transform(x_feats).toarray()
+    # x_feats = f_selector.transform(x_feats).toarray()
     print(x_feats.shape)
 
     # classifier = VotingClassifier(estimators=[('nb', MultinomialNB(alpha=0.25)), ('svm', SVC(C=1.0, gamma=1.0))])
@@ -239,3 +241,4 @@ if __name__ == "__main__":
     print('--------------------', end='\n')
     print('Average Total Precision is %f' % (avg_p_all / 10.0))
     print('Average Total Recall is %f' % (avg_r_all / 10.0), end='\n')
+    dump(classifier, 'text_senti.joblib')
