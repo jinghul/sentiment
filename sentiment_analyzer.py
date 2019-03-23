@@ -170,8 +170,6 @@ class SentiText(object):
         if not isinstance(text, str):
             text = str(text.encode('utf-8'))
         self.text = text
-        self.rt_count = rt_count
-        self.fl_count = fl_count
         self.words_and_emoticons = self._words_and_emoticons()
         # doesn't separate words from\
         # adjacent punctuation (keeps emoticons & contractions)
