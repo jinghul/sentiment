@@ -14,7 +14,7 @@ from itertools import product
 from inspect import getsourcefile
 from os.path import abspath, join, dirname
 
-nltk.download()
+# nltk.download()
 from nltk.corpus import stopwords
 
 # Additional sklearn imports for SVM/Bayes + Feature Selection
@@ -66,7 +66,6 @@ def rm_time(str):
 
 def rm_punctuation(current_tweet):
     return re.sub(r'[^\w\s]','',current_tweet)
-
 
 porter = nltk.PorterStemmer()
 
